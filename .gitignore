@@ -1,1 +1,17 @@
-#
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Build
+bin/
+obj/
+*.dll
+*.exe
+
+# Logs
+*.log
+
+# Others
+*.vsidx
