@@ -9,12 +9,18 @@ using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.UnitTests.Testes.Services
 {
+    /// <summary>
+    /// Teste unitário para a classe <see cref="TarefaService"/>.
+    /// </summary>
     public class TarefaServiceTests
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly TarefaService _service;
 
+        /// <summary>
+        /// Construtor que inicializa os mocks e o serviço a ser testado.
+        /// </summary>
         public TarefaServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
@@ -22,6 +28,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _service = new TarefaService(_unitOfWorkMock.Object, _mapperMock.Object);
         }
 
+        /// <summary>
+        /// Adiciona uma nova tarefa e verifica se lança exceção ao exceder o limite de 20 tarefas por projeto.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task AdicionarTarefa_DeveFalhar_SeLimiteExcedido()
         {
@@ -35,6 +45,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.Equal("Limite máximo de 20 tarefas por projeto atingido.", ex.Message);
         }
 
+        /// <summary>
+        /// Atualiza uma tarefa e verifica se lança exceção ao tentar alterar a prioridade.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task AtualizarTarefa_DeveFalhar_SePrioridadeAlterada()
         {
@@ -48,6 +62,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.Equal("Prioridade da tarefa não pode ser alterada.", ex.Message);
         }
 
+        /// <summary>
+        /// Adiciona um comentário a uma tarefa e verifica se o histórico é registrado corretamente.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task AdicionarComentario_DeveRegistrarHistorico()
         {
@@ -62,6 +80,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
 
+        /// <summary>
+        /// Adiciona uma nova tarefa e verifica se funciona corretamente quando dentro do limite de 20 tarefas por projeto.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task AdicionarTarefa_DeveFuncionar_SeDentroDoLimite()
         {
@@ -85,6 +107,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
 
+        /// <summary>
+        /// Atualiza uma tarefa e verifica se funciona corretamente quando a prioridade não é alterada.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task AtualizarTarefa_DeveFuncionar_SePrioridadeNaoAlterada()
         {
@@ -105,6 +131,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
 
+        /// <summary>
+        /// Obtém uma tarefa completa e verifica se retorna nulo quando a tarefa não existe.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task ObterTarefaCompleta_DeveRetornarTarefa_SeExistente()
         {
@@ -119,6 +149,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.NotNull(resultado);
         }
 
+        /// <summary>
+        /// Gera um relatório de desempenho e verifica se retorna dados corretamente.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task GerarRelatorioDesempenho_DeveRetornarDados()
         {
@@ -135,6 +169,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.Equal(10, resultado.First().TotalConcluidas);
         }
 
+        /// <summary>
+        /// Deleta uma tarefa e verifica se funciona corretamente quando a tarefa existe.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task DeletarTarefa_DeveRemover_SeExistente()
         {
@@ -151,6 +189,10 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
 
+        /// <summary>
+        /// Deleta um comentário e verifica se funciona corretamente quando o comentário existe.
+        /// </summary>
+        /// <returns>Resultado do teste.</returns>
         [Fact]
         public async Task DeletaComentario_DeveRemover_SeExistente()
         {

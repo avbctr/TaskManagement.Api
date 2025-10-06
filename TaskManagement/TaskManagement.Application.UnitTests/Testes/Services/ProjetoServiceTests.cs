@@ -10,12 +10,30 @@ using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.UnitTests.Testes.Services
 {
+    /// <summary>
+    /// Classe de testes unitários para <see cref="ProjetoService"/>.
+    /// Valida regras de negócio relacionadas à criação, atualização, remoção e consulta de projetos.
+    /// </summary>
     public class ProjetoServiceTests
     {
+        /// <summary>
+        /// Mock da unidade de trabalho que simula os repositórios e persistência.
+        /// </summary>
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+
+        /// <summary>
+        /// Mock do AutoMapper utilizado para conversão entre entidades e view models.
+        /// </summary>
         private readonly Mock<IMapper> _mapperMock;
+
+        /// <summary>
+        /// Instância do serviço de projeto sendo testado.
+        /// </summary>
         private readonly ProjetoService _service;
 
+        /// <summary>
+        /// Inicializa os mocks e a instância do serviço para os testes.
+        /// </summary>
         public ProjetoServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
@@ -23,6 +41,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _service = new ProjetoService(_unitOfWorkMock.Object, _mapperMock.Object);
         }
 
+        /// <summary>
+        /// Verifica se a tentativa de remover um projeto com tarefas pendentes lança exceção.
+        /// </summary>
         [Fact]
         public async Task RemoverProjeto_DeveFalhar_SeTarefaPendente()
         {
@@ -34,6 +55,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.Equal("Projeto possui tarefas pendentes. Conclua ou remova as tarefas antes de excluir o projeto.", ex.Message);
         }
 
+        /// <summary>
+        /// Verifica se a criação de projeto falha quando já existe um nome duplicado para o mesmo usuário.
+        /// </summary>
         [Fact]
         public async Task CriarProjeto_DeveFalhar_SeNomeDuplicado()
         {
@@ -44,7 +68,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.Equal("Já existe um projeto com esse nome para o usuário.", ex.Message);
         }
 
-
+        /// <summary>
+        /// Verifica se a criação de projeto funciona corretamente quando não há conflito de nome.
+        /// </summary>
         [Fact]
         public async Task CriarProjeto_DeveFuncionar_SeNomeNaoDuplicado()
         {
@@ -60,6 +86,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
 
+        /// <summary>
+        /// Verifica se a atualização de projeto funciona corretamente com dados válidos.
+        /// </summary>
         [Fact]
         public async Task AtualizarProjeto_DeveFuncionar_SeDadosValidos()
         {
@@ -80,6 +109,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
 
+        /// <summary>
+        /// Verifica se a consulta de projeto completo retorna dados quando o projeto existe.
+        /// </summary>
         [Fact]
         public async Task ObterProjetoCompleto_DeveRetornarProjeto_SeExistente()
         {
@@ -94,6 +126,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.NotNull(resultado);
         }
 
+        /// <summary>
+        /// Verifica se a consulta de projetos por usuário retorna uma lista válida.
+        /// </summary>
         [Fact]
         public async Task ObterProjetosPorUsuario_DeveRetornarLista()
         {
@@ -109,6 +144,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.IsAssignableFrom<IEnumerable<ProjetoResumoViewModel>>(resultado);
         }
 
+        /// <summary>
+        /// Verifica se o método ApiResult.Ok retorna sucesso corretamente.
+        /// </summary>
         [Fact]
         public void ApiResult_Ok_DeveRetornarSucesso()
         {
@@ -119,6 +157,9 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             Assert.Null(result.Errors);
         }
 
+        /// <summary>
+        /// Verifica se o método ApiResult.Fail retorna erro corretamente.
+        /// </summary>
         [Fact]
         public void ApiResult_Fail_DeveRetornarErro()
         {

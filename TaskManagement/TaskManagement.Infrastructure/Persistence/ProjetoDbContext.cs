@@ -244,7 +244,7 @@ namespace TaskManagement.Infrastructure.Persistence
 
             // Connection string de exemplo para PostgreSQL.
             // ⚠️ ATENÇÃO: Nunca versionar credenciais reais. Use variáveis de ambiente ou arquivos seguros em produção.
-            var connectionString = "Host=pgsql.avbc.dev;Port=5432;Database=avbc1;Username=avbc1;Password=Test01Api25;Pooling=true;SSL Mode=Prefer;Trust Server Certificate=true;SearchPath=taskmanagement"; //"Host=localhost;Port=5432;Database=seu_banco;Username=seu_usuario;Password=sua_senha;SearchPath=taskmanagement";
+            var connectionString = "Host=localhost;Port=5432;Database=bancodedados;Username=usuario;Password=senha;Pooling=true;SSL Mode=Prefer;Trust Server Certificate=true;SearchPath=taskmanagement";
 
             // Configura o provedor Npgsql (PostgreSQL) com:
             // - Schema padrão definido via SearchPath
