@@ -1,4 +1,5 @@
 ﻿using TaskManagement.Domain.Entities;
+using TaskManagement.Domain.Entities.Views;
 
 namespace TaskManagement.Application.Interfaces.Persistence
 {
@@ -41,5 +42,10 @@ namespace TaskManagement.Application.Interfaces.Persistence
         /// Obtém todas as tarefas elegíveis para exclusão de um projeto.
         /// </summary>
         Task<IEnumerable<Tarefa>> ObterElegiveisParaExclusaoAsync(Guid projetoId);
+
+        /// <summary>
+        /// Obtém a média de tarefas concluídas por usuário nos últimos 30 dias.
+        /// </summary>
+        Task<IEnumerable<RelatorioDesempenhoViewModel>> ObterMediaTarefasConcluidasPorUsuarioAsync();
     }
 }

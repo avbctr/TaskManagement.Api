@@ -52,7 +52,7 @@ namespace TaskManagement.Api.Controllers.Tarefas.V01
                 _logger.LogError(ex, "Erro ao obter tarefa com ID {TarefaId}", id);
 
                 return BadRequest(ApiResult<TarefaViewModel?>.Fail("Não foi possível obter os dados da tarefa. Tente novamente mais tarde.",
-                    new List<string> { "Falha interna ao processar a requisição." } ));
+                    new List<string> { ex.Message } ));
             }
         }
 
@@ -79,7 +79,7 @@ namespace TaskManagement.Api.Controllers.Tarefas.V01
                 _logger.LogError(ex, "Erro ao criar tarefa com dados {@Tarefa}", payload);
 
                 return BadRequest(ApiResult<string>.Fail("Erro ao criar tarefa.",
-                    new List<string> { "Falha interna ao processar a requisição." }));
+                    new List<string> { ex.Message }));
             }
         }
 
@@ -105,7 +105,7 @@ namespace TaskManagement.Api.Controllers.Tarefas.V01
                 // Loga o erro internamente (ex: Serilog, ILogger, etc.)
                 _logger.LogError(ex, "Erro ao atualizar tarefa com dados {@Tarefa}", payload);
 
-                return BadRequest(ApiResult<string>.Fail("Erro ao atualizar tarefa.", new List<string> { "Falha interna ao processar a requisição." }));
+                return BadRequest(ApiResult<string>.Fail("Erro ao atualizar tarefa.", new List<string> { ex.Message }));
             }
         }
 
@@ -130,7 +130,7 @@ namespace TaskManagement.Api.Controllers.Tarefas.V01
             {
                 // Loga o erro internamente (ex: Serilog, ILogger, etc.)
                 _logger.LogError(ex, "Erro ao adicionar comentário com dados {@Comentario}", payload);
-                return BadRequest(ApiResult<string>.Fail("Erro ao adicionar comentário.", new List<string> { "Falha interna ao processar a requisição." }));
+                return BadRequest(ApiResult<string>.Fail("Erro ao adicionar comentário.", new List<string> { ex.Message }));
             }
         }
 
@@ -155,7 +155,7 @@ namespace TaskManagement.Api.Controllers.Tarefas.V01
             {
                 // Loga o erro internamente (ex: Serilog, ILogger, etc.)
                 _logger.LogError(ex, "Erro ao remover tarefa com ID {TarefaId}", id);
-                return BadRequest(ApiResult<string>.Fail("Erro ao remover tarefa.", new List<string> { "Falha interna ao processar a requisição." }));
+                return BadRequest(ApiResult<string>.Fail("Erro ao remover tarefa.", new List<string> { ex.Message }));
             }
         }
 
@@ -180,7 +180,34 @@ namespace TaskManagement.Api.Controllers.Tarefas.V01
             {
                 // Loga o erro internamente (ex: Serilog, ILogger, etc.)
                 _logger.LogError(ex, "Erro ao remover comentário com ID {ComentarioId}", comentarioId);
-                return BadRequest(ApiResult<string>.Fail("Erro ao remover comentário.", new List<string> { "Falha interna ao processar a requisição." }));
+                return BadRequest(ApiResult<string>.Fail("Erro ao remover comentário.", new List<string> { ex.Message }));
+            }
+        }
+
+        /// <summary>
+        /// Gera um relatório de desempenho das tarefas, incluindo métricas como número de tarefas concluídas, pendentes e atrasadas.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="role"></param>
+        /// <returns>Relatório de desempenho das tarefas.</returns>
+        [HttpGet("relatorio-desempenho")]
+        [ProducesResponseType(typeof(ApiResult<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResult<string>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GerarRelatorioDesempenho([FromQuery] Guid userId, [FromQuery] string role)
+        {
+            if (!role.Equals("gerente", StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+            try
+            {
+                var relatorio = await _tarefaService.GerarRelatorioDesempenhoAsync();
+                return Ok(ApiResult<IEnumerable<RelatorioDesempenhoViewModel>>.Ok(relatorio));
+            }
+            catch (Exception ex)
+            {
+                // Loga o erro internamente (ex: Serilog, ILogger, etc.)
+                _logger.LogError(ex, "Erro ao gerar relatório de desempenho para o usuário {UserId}", userId);
+                return BadRequest(ApiResult<string>.Fail("Erro ao gerar relatório de desempenho.", 
+                    new List<string> { "Verifique suas permissões ou entre em contato com o suporte!" }));
             }
         }
     }

@@ -98,6 +98,9 @@ namespace TaskManagement.Application.Services
             if (tarefa == null)
                 throw new KeyNotFoundException("Tarefa não encontrada.");
 
+            if(tarefa.Prioridade != payload.Prioridade)
+                throw new InvalidOperationException("Prioridade da tarefa não pode ser alterada.");
+
             string _descricaoTratada = TrataDescricaoAlteracao(tarefa.Descricao, payload?.Descricao);
 
             tarefa.Atualizar(payload.Titulo, _descricaoTratada, payload.Status);
@@ -177,6 +180,13 @@ namespace TaskManagement.Application.Services
             await _unitOfWork.Comentarios.ExcluirComentariosPoIdAsync(comentarioId);
             await _unitOfWork.CommitAsync();
         }
+
+        /// <summary>
+        /// Gera um relatório de desempenho dos usuários com base na média de tarefas concluídas.
+        /// </summary>
+        /// <returns>Relatório de desempenho dos usuários.</returns>
+        public async Task<IEnumerable<RelatorioDesempenhoViewModel>> GerarRelatorioDesempenhoAsync()
+            => await _unitOfWork.Tarefas.ObterMediaTarefasConcluidasPorUsuarioAsync();
     }
 }
 

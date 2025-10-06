@@ -124,6 +124,9 @@ namespace TaskManagement.Infrastructure.Persistence
                     .IsRequired()
                     .HasColumnType("timestamptz");
 
+                entity.Property(p => p.DataConclusao)
+                    .HasColumnType("timestamptz");
+
                 entity.Property(p => p.Prioridade)
                     .IsRequired()
                     .HasConversion<int>();

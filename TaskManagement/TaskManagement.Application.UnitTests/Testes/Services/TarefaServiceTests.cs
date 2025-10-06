@@ -4,6 +4,7 @@ using TaskManagement.Application.Interfaces.Persistence;
 using TaskManagement.Application.Models.Payloads;
 using TaskManagement.Application.Services;
 using TaskManagement.Domain.Entities;
+using TaskManagement.Domain.Entities.Views;
 using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Application.UnitTests.Testes.Services
@@ -58,6 +59,109 @@ namespace TaskManagement.Application.UnitTests.Testes.Services
             await _service.AdicionarComentarioAsync(payload);
 
             _unitOfWorkMock.Verify(u => u.Historicos.RegistrarAsync(It.IsAny<TarefaHistorico>()), Times.Once);
+            _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task AdicionarTarefa_DeveFuncionar_SeDentroDoLimite()
+        {
+            var projetoId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var payload = new NovaTarefaPayload("Título", "Descrição", DateTime.UtcNow.AddDays(1), TarefaPrioridades.Medium, projetoId, userId);
+
+            var projeto = new Projeto("Projeto", userId);
+            var tarefas = new List<Tarefa>(); // menos de 20
+
+            _unitOfWorkMock.Setup(u => u.Projetos.ObterPorIdAsync(projetoId)).ReturnsAsync(projeto);
+            _unitOfWorkMock.Setup(u => u.Tarefas.ObterTodasPorProjetoIdAsync(projetoId)).ReturnsAsync(tarefas);
+            _unitOfWorkMock.Setup(u => u.Tarefas.AdicionarAsync(It.IsAny<Tarefa>())).Returns(Task.CompletedTask);
+            _unitOfWorkMock.Setup(u => u.Historicos.RegistrarAsync(It.IsAny<TarefaHistorico>())).Returns(Task.CompletedTask);
+            _unitOfWorkMock.Setup(u => u.CommitAsync()).ReturnsAsync(1);
+
+            await _service.AdicionarTarefaAsync(payload);
+
+            _unitOfWorkMock.Verify(u => u.Tarefas.AdicionarAsync(It.IsAny<Tarefa>()), Times.Once);
+            _unitOfWorkMock.Verify(u => u.Historicos.RegistrarAsync(It.IsAny<TarefaHistorico>()), Times.Once);
+            _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task AtualizarTarefa_DeveFuncionar_SePrioridadeNaoAlterada()
+        {
+            var tarefaId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var payload = new AtualizaTarefaPayload(tarefaId, "Novo Título", "Nova Desc", TarefaStatus.EmAndamento, TarefaPrioridades.Low, "Alteração", userId);
+            var tarefaExistente = new Tarefa("Título", "Desc", DateTime.Now, TarefaPrioridades.Low, Guid.NewGuid());
+
+            _unitOfWorkMock.Setup(u => u.Tarefas.ObterPorIdAsync(tarefaId)).ReturnsAsync(tarefaExistente);
+            _unitOfWorkMock.Setup(u => u.Tarefas.AtualizarAsync(It.IsAny<Tarefa>())).Returns(Task.CompletedTask);
+            _unitOfWorkMock.Setup(u => u.Historicos.RegistrarAsync(It.IsAny<TarefaHistorico>())).Returns(Task.CompletedTask);
+            _unitOfWorkMock.Setup(u => u.CommitAsync()).ReturnsAsync(1);
+
+            await _service.AtualizarTarefaAsync(payload);
+
+            _unitOfWorkMock.Verify(u => u.Tarefas.AtualizarAsync(It.IsAny<Tarefa>()), Times.Once);
+            _unitOfWorkMock.Verify(u => u.Historicos.RegistrarAsync(It.IsAny<TarefaHistorico>()), Times.Once);
+            _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task ObterTarefaCompleta_DeveRetornarTarefa_SeExistente()
+        {
+            var tarefaId = Guid.NewGuid();
+            var tarefa = new Tarefa("Título", "Desc", DateTime.Now, TarefaPrioridades.Low, Guid.NewGuid());
+
+            _unitOfWorkMock.Setup(u => u.Tarefas.ObterPorIdAsync(tarefaId)).ReturnsAsync(tarefa);
+            _mapperMock.Setup(m => m.Map<TarefaViewModel>(tarefa)).Returns(new TarefaViewModel());
+
+            var resultado = await _service.ObterTarefaCompletaAsync(tarefaId);
+
+            Assert.NotNull(resultado);
+        }
+
+        [Fact]
+        public async Task GerarRelatorioDesempenho_DeveRetornarDados()
+        {
+            var relatorio = new List<RelatorioDesempenhoViewModel>
+            {
+                new() { UserId = Guid.NewGuid(), NomeUsuario = "Usuário A", TotalConcluidas = 10 }
+            };
+
+            _unitOfWorkMock.Setup(u => u.Tarefas.ObterMediaTarefasConcluidasPorUsuarioAsync()).ReturnsAsync(relatorio);
+
+            var resultado = await _service.GerarRelatorioDesempenhoAsync();
+
+            Assert.NotEmpty(resultado);
+            Assert.Equal(10, resultado.First().TotalConcluidas);
+        }
+
+        [Fact]
+        public async Task DeletarTarefa_DeveRemover_SeExistente()
+        {
+            var tarefaId = Guid.NewGuid();
+            var tarefa = new Tarefa("Título", "Desc", DateTime.Now, TarefaPrioridades.Low, Guid.NewGuid());
+
+            _unitOfWorkMock.Setup(u => u.Tarefas.ObterPorIdAsync(tarefaId)).ReturnsAsync(tarefa);
+            _unitOfWorkMock.Setup(u => u.Tarefas.RemoverAsync(tarefaId)).Returns(Task.CompletedTask);
+            _unitOfWorkMock.Setup(u => u.CommitAsync()).ReturnsAsync(1);
+
+            await _service.DeletarTarefaAsync(tarefaId);
+
+            _unitOfWorkMock.Verify(u => u.Tarefas.RemoverAsync(tarefaId), Times.Once);
+            _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeletaComentario_DeveRemover_SeExistente()
+        {
+            var comentarioId = Guid.NewGuid();
+
+            _unitOfWorkMock.Setup(u => u.Comentarios.ExcluirComentariosPoIdAsync(comentarioId)).Returns(Task.CompletedTask);
+            _unitOfWorkMock.Setup(u => u.CommitAsync()).ReturnsAsync(1);
+
+            await _service.DeletaComentarioAsync(comentarioId);
+
+            _unitOfWorkMock.Verify(u => u.Comentarios.ExcluirComentariosPoIdAsync(comentarioId), Times.Once);
             _unitOfWorkMock.Verify(u => u.CommitAsync(), Times.Once);
         }
     }

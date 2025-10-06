@@ -42,7 +42,16 @@ namespace TaskManagement.Domain.Entities
         /// </summary>
         [Display(Name = "Data de Vencimento")]
         [Description("Data limite para conclusão da tarefa.")]
+        [DataType(DataType.DateTime)]
         public DateTime DataVencimento { get; private set; }
+
+        /// <summary>
+        /// Data em que a tarefa foi concluída. Pode ser nula se a tarefa ainda não foi concluída.
+        /// </summary>
+        [Display(Name = "Data de Conclusão")]
+        [Description("Data em que a tarefa foi concluída.")]
+        [DataType(DataType.DateTime)]
+        public DateTime? DataConclusao { get; private set; }
 
         /// <summary>
         /// Prioridade atribuída à tarefa. Não pode ser alterada após a criação.
@@ -137,6 +146,9 @@ namespace TaskManagement.Domain.Entities
             if (!String.IsNullOrEmpty(descricao))
                 Descricao = descricao;
 
+            if (status == TarefaStatus.Concluida)
+                DataConclusao = DateTime.UtcNow;
+
             Status = status;
         }
 
@@ -144,7 +156,13 @@ namespace TaskManagement.Domain.Entities
         /// Atualiza apenas o status da tarefa.
         /// </summary>
         /// <param name="novoStatus">Novo status a ser atribuído.</param>
-        public void AtualizarStatus(TarefaStatus novoStatus) => Status = novoStatus;
+        public void AtualizarStatus(TarefaStatus novoStatus)
+        {
+            if (novoStatus == TarefaStatus.Concluida)
+                DataConclusao = DateTime.UtcNow;
+
+            Status = novoStatus;
+        }
 
         /// <summary>
         /// Adiciona um novo registro ao histórico da tarefa.

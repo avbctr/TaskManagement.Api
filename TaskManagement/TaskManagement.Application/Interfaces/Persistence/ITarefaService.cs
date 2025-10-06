@@ -41,5 +41,11 @@ namespace TaskManagement.Application.Interfaces.Persistence
         /// <param name="comentarioId"></param>
         /// <returns></returns>
         Task DeletaComentarioAsync(Guid comentarioId);
+
+        /// <summary>
+        /// Gera um relatório de desempenho dos usuários, incluindo total de tarefas concluídas e média diária.
+        /// </summary>
+        /// <returns>Relatório de desempenho dos usuários.</returns>
+        Task<IEnumerable<RelatorioDesempenhoViewModel>> GerarRelatorioDesempenhoAsync();
     }
 }

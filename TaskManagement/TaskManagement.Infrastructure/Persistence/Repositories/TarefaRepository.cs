@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application.Interfaces.Persistence;
 using TaskManagement.Domain.Entities;
+using TaskManagement.Domain.Entities.Views;
 using TaskManagement.Domain.Enums;
 
 namespace TaskManagement.Infrastructure.Persistence.Repositories
@@ -52,7 +53,7 @@ namespace TaskManagement.Infrastructure.Persistence.Repositories
         {
             if (tarefa is null)
                 throw new ArgumentNullException(nameof(tarefa), "A tarefa não pode ser nula.");
-
+            
             await _context.Set<Tarefa>().AddAsync(tarefa);
             await _context.SaveChangesAsync();
         }
@@ -137,6 +138,26 @@ namespace TaskManagement.Infrastructure.Persistence.Repositories
 
             return await _context.Set<Tarefa>()
                 .Where(t => t.ProjectId == projetoId && t.Status != TarefaStatus.Pendente)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Obtém o número médio de tarefas concluídas por usuário nos últimos 30 dias.
+        /// </summary>
+        /// <returns>Lista com o UserId e média de tarefas concluídas.</returns>
+        public async Task<IEnumerable<RelatorioDesempenhoViewModel>> ObterMediaTarefasConcluidasPorUsuarioAsync()
+        {
+            var dataLimite = DateTime.UtcNow.AddDays(-30);
+
+            return await _context.Set<Tarefa>()
+                .Where(t => t.Status == TarefaStatus.Concluida && t.DataConclusao >= dataLimite)
+                .GroupBy(t => t.Projeto.UserId)
+                .Select(g => new RelatorioDesempenhoViewModel
+                {
+                    UserId = g.Key,
+                    NomeUsuario = $"Usuário {g.Key}",
+                    TotalConcluidas = g.Count(),
+                })
                 .ToListAsync();
         }
     }

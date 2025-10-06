@@ -55,7 +55,7 @@ namespace TaskManagement.Api.Controllers.Projetos.V01
             {
                 _logger.LogError(ex, "Erro ao obter projeto com ID {ProjetoId}.", id);
                 return BadRequest(ApiResult<ProjetoViewModel?>.Fail("Não foi possível obter os dados do projeto. Tente novamente mais tarde.",
-                    new List<string> { "Falha interna ao processar a requisição." }));
+                    new List<string> { ex.Message }));
             }
         }
 
@@ -81,7 +81,7 @@ namespace TaskManagement.Api.Controllers.Projetos.V01
             {
                 _logger.LogError(ex, "Erro ao validar UserId {UserId}.", UserId);
                 return BadRequest(ApiResult<IEnumerable<ProjetoResumoViewModel>>.Fail("Não foi possível processar a requisição. Tente novamente mais tarde.",
-                    new List<string> { "Falha interna ao processar a requisição." }));
+                    new List<string> { ex.Message }));
             }
         }
 
@@ -107,7 +107,7 @@ namespace TaskManagement.Api.Controllers.Projetos.V01
                 _logger.LogError(ex, "Erro ao criar projeto com dados {@Projeto}", payload);
                 return BadRequest(ApiResult<string>.Fail(
                     "Não foi possível criar o projeto.",
-                    new List<string> { "Falha interna ao processar a requisição." }
+                    new List<string> { ex.Message }
                 ));
             }
         }
@@ -134,7 +134,7 @@ namespace TaskManagement.Api.Controllers.Projetos.V01
                 _logger.LogError(ex, "Erro ao atualizar projeto com dados {@Projeto}", payload);
                 return BadRequest(ApiResult<string>.Fail(
                     "Não foi possível atualizar o projeto.",
-                    new List<string> { "Falha interna ao processar a requisição." }
+                    new List<string> { ex.Message }
                 ));
             }
         }
@@ -161,7 +161,7 @@ namespace TaskManagement.Api.Controllers.Projetos.V01
                 _logger.LogError(ex, "Erro ao remover projeto com ID {ProjetoId}.", id);
                 return BadRequest(ApiResult<string>.Fail(
                     "Não foi possível remover o projeto.",
-                    new List<string> { "Verifique se todas as tarefas estão concluídas antes de tentar novamente." }
+                    new List<string> { ex.Message }
                 ));
             }
         }
